@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Dice Battle - Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+    <body onload="initGame()">
+
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+            <title>Dice Battle - Game</title>
+            <link rel="stylesheet" href="style.css">
+        </head>
+
+        <body onload="initGame()">
+
+            <div class="game-container">
+                <h2 class="game-title">DICE BATTLE</h2>
+                <div class="fixed-dice">
+                    <div class="dice-box">
+                        <div id="dice1" class="dice neon">⚀</div>
+                        <p>Fixed Dice 1</p>
+                    </div>
+
+                    <div class="dice-box">
+                        <div id="dice2" class="dice neon">⚀</div>
+                        <p>Fixed Dice 2</p>
+                    </div>
+                </div>
+
+
+                <div class="players">
+
+                    <div class="player-section">
+
+                        <div class="player-card" id="p1Card">
+                            <h3 id="player1Title">Player 1</h3>
+                            <span class="turn-badge" id="turn1">YOUR TURN</span>
+                        </div>
+
+                        <table id="p1Table" class="result-table">
+                            <tr>
+                                <th>Turn</th>
+                                <th>Result</th>
+                            </tr>
+
+
+                        </table>
+
+                    </div>
+
+                    <div class="roll-section">
+                        <div id="rollingDice" class="dice big-dice">⚀</div>
+                        <button class="roll-btn" onclick="rollDice()">ROLL</button>
+
+                        <div id="bonusMsg" class="bonus-box"></div>
+                    </div>
+
+                    <div class="player-section">
+
+                        <div class="player-card" id="p2Card">
+                            <h3 id="player2Title">Player 2</h3>
+                            <span class="turn-badge" id="turn2">YOUR TURN</span>
+                        </div>
+
+                        <table id="p2Table" class="result-table">
+                            <tr>
+                                <th>Turn</th>
+                                <th>Result</th>
+                            </tr>
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <div id="remainingChances" class="chances-text"></div>
+
+
+            </div>
+
+            <script src="script.js"></script>
+
+        </body>
+
+        </html>
+
+

@@ -1,95 +1,119 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dice Battle - Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
-    <body onload="initGame()">
+<body onload="initGame()">
 
-        <!DOCTYPE html>
+    <div class="game-container">
 
-        <html>
+        <!-- Game Title -->
+        <h2 class="game-title">DICE BATTLE</h2>
 
-        <head>
-            <title>Dice Battle - Game</title>
-            <link rel="stylesheet" href="style.css">
-        </head>
-
-        <body onload="initGame()">
-
-            <div class="game-container">
-                <h2 class="game-title">DICE BATTLE</h2>
-                <div class="fixed-dice">
-                    <div class="dice-box">
-                        <div id="dice1" class="dice neon">⚀</div>
-                        <p>Fixed Dice 1</p>
-                    </div>
-
-                    <div class="dice-box">
-                        <div id="dice2" class="dice neon">⚀</div>
-                        <p>Fixed Dice 2</p>
-                    </div>
+        <!-- Energy / Progress Bars -->
+        <div class="progress-section">
+            <div class="progress-box">
+                <span id="player1Title" style="margin-bottom: 5px; margin-left: 50px;">Player 1 Energy</span>
+                <div class="progress" style="margin-left: 50px;">
+                    <div id="p1Progress" class="progress-fill"></div>
                 </div>
-
-
-                <div class="players">
-
-                    <div class="player-section">
-
-                        <div class="player-card" id="p1Card">
-                            <h3 id="player1Title">Player 1</h3>
-                            <span class="turn-badge" id="turn1">YOUR TURN</span>
-                        </div>
-
-                        <table id="p1Table" class="result-table">
-                            <tr>
-                                <th>Turn</th>
-                                <th>Result</th>
-                            </tr>
-
-
-                        </table>
-
-                    </div>
-
-                    <div class="roll-section">
-                        <div id="rollingDice" class="dice big-dice">⚀</div>
-                        <button class="roll-btn" onclick="rollDice()">ROLL</button>
-
-                        <div id="bonusMsg" class="bonus-box"></div>
-                    </div>
-
-                    <div class="player-section">
-
-                        <div class="player-card" id="p2Card">
-                            <h3 id="player2Title">Player 2</h3>
-                            <span class="turn-badge" id="turn2">YOUR TURN</span>
-                        </div>
-
-                        <table id="p2Table" class="result-table">
-                            <tr>
-                                <th>Turn</th>
-                                <th>Result</th>
-                            </tr>
-                        </table>
-
-                    </div>
-
-                </div>
-
-
-                <div id="remainingChances" class="chances-text"></div>
-
-
             </div>
 
-            <script src="script.js"></script>
+            <div class="progress-box">
+                <span id="player2Title" style="margin-bottom: 5px; margin-right: 50px;">Player 2 Energy</span>
+                <div class="progress" style="margin-right: 50px;">
+                    <div id="p2Progress" class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
 
-        </body>
+        <!-- Fixed Dice Section -->
+        <div class="fixed-dice">
+            <div class="dice-box">
+                <div id="dice1" class="dice">⚀</div>
+                <p>Fixed Dice 1</p>
+            </div>
 
-        </html>
+            <div class="dice-box">
+                <div id="dice2" class="dice">⚀</div>
+                <p>Fixed Dice 2</p>
+            </div>
+        </div>
 
+        <!-- Players + Roll Section -->
+        <div class="players">
 
+            <!-- Player 1 -->
+            <div class="player-section">
+                <div class="player-card player-active" id="p1Card">
+                    <div class="player-frequency" id="p1Freq">Score: 0</div>
+                    <h3 id="p1Name">Player 1</h3>
+                    <span class="turn-badge" id="turn1">YOUR TURN</span>
+                </div>
+
+                <table id="p1Table">
+                    <tr>
+                        <th>Turn</th>
+                        <th>Roll</th>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Rolling Dice -->
+            <div class="roll-section">
+                <div id="rollingDice" class="dice big-dice">⚀</div>
+                <button class="roll-btn" onclick="rollDice()">ROLL</button>
+            </div>
+
+            <!-- Player 2 -->
+            <div class="player-section">
+                <div class="player-card" id="p2Card">
+                    <div class="player-frequency" id="p2Freq">Score: 0</div>
+                    <h3 id="p2Name">Player 2</h3>
+                    <span class="turn-badge" id="turn2">YOUR TURN</span>
+                </div>
+
+                <table id="p2Table">
+                    <tr>
+                        <th>Turn</th>
+                        <th>Roll</th>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Winner Screen Overlay -->
+    <div id="winnerScreen" class="winner-screen" style="display:none;">
+        <div class="winner-box">
+            <h1 id="winnerText"></h1>
+            <button onclick="location.reload()">🏠 Home</button>
+        </div>
+    </div>
+
+    <!-- Bonus Message -->
+    <div id="bonusMsg" style="
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #facc15;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: none;
+    z-index: 9999;
+"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

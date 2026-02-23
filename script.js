@@ -1,50 +1,43 @@
 const diceFaces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 
 let currentPlayer = 1;
-let fixed1, fixed2;
+
+let p1Fixed1, p1Fixed2;
+let p2Fixed1, p2Fixed2;
 
 let player1Name = "";
 let player2Name = "";
 
-let bonusActive = false;
-
 let p1Turns = 0;
 let p2Turns = 0;
 
+let p1Step = 0;
+let p2Step = 0;
+
 const MAX_TURNS = 5;
+const ROLL_TIMEOUT = 20000;
 
-let firstMatchedDice = null;
+let rollTimer = null;
 
-
+/* ================= START GAME ================= */
 
 function startGame() {
     playGame();
 }
 
 function playGame() {
-
     let p1 = document.getElementById("p1").value.trim();
     let p2 = document.getElementById("p2").value.trim();
     let error = document.getElementById("error");
 
-    let regex = /^[A-Za-z ]+$/;
-
+    let regex = /^[A-Za-z]+$/;
     error.innerText = "";
 
-    if (p1 === "" || p2 === "") {
-        error.innerText = "Names cannot be empty";
-        return;
-    }
-
-    if (!regex.test(p1) || !regex.test(p2)) {
-        error.innerText = "Names must contain only alphabets";
-        return;
-    }
-
-    if (p1.toLowerCase() === p2.toLowerCase()) {
-        error.innerText = "Names cannot be same";
-        return;
-    }
+    if (!p1) { error.innerText = "Player1 Name cannot be empty"; return; }
+    if (!p2) { error.innerText = "Player2 Name cannot be empty"; return; }
+    if (!regex.test(p1)) { error.innerText = "Player1 Name must contain only alphabets"; return; }
+    if (!regex.test(p2)) { error.innerText = "Player2 Name must contain only alphabets"; return; }
+    if (p1.toLowerCase() === p2.toLowerCase()) { error.innerText = "Names cannot be same"; return; }
 
     localStorage.setItem("player1Name", p1);
     localStorage.setItem("player2Name", p2);
@@ -52,6 +45,7 @@ function playGame() {
     window.location.href = "game.html";
 }
 
+/* ================= INIT GAME ================= */
 
 function initGame() {
 
@@ -63,218 +57,225 @@ function initGame() {
         return;
     }
 
-    document.getElementById("player1Title").innerText = player1Name;
-    document.getElementById("player2Title").innerText = player2Name;
+    document.getElementById("p1Card").querySelector("h3").innerText = player1Name;
+    document.getElementById("p2Card").querySelector("h3").innerText = player2Name;
 
-    fixed1 = random();
-    fixed2 = random();
+    // Player 1 fixed dice
+    p1Fixed1 = random();
+    p1Fixed2 = random();
+    while (p1Fixed2 === p1Fixed1) {
+        p1Fixed2 = random();
+    }
 
-    document.getElementById("dice1").innerText = diceFaces[fixed1];
-    document.getElementById("dice2").innerText = diceFaces[fixed2];
+    // Player 2 fixed dice
+    p2Fixed1 = random();
+    p2Fixed2 = random();
+    while (p2Fixed2 === p2Fixed1) {
+        p2Fixed2 = random();
+    }
+
+    // 🔥 Immediately show current player's fixed dice
+    showCurrentPlayerFixedDice();
 
     currentPlayer = 1;
-    bonusActive = false;
     p1Turns = 0;
     p2Turns = 0;
-    firstMatchedDice = null;
+    p1Step = 0;
+    p2Step = 0;
 
-    updateChances();
     updateHighlight();
+    showCurrentPlayerFixedDice();
+    startRollTimer();
 }
 
-
+/* ================= ROLL ================= */
 
 function rollDice() {
 
+    clearTimeout(rollTimer);
+
     let roll = random();
-    let diceEl = document.getElementById("rollingDice");
+    let diceElement = document.getElementById("rollingDice");
 
-    diceEl.style.transform = "rotate(360deg)";
-    diceEl.style.transition = "0.3s";
-
-    setTimeout(() => {
-        diceEl.innerText = diceFaces[roll];
-        diceEl.style.transform = "rotate(0deg)";
-    }, 200);
+    diceElement.classList.add("roll-spin");
 
     setTimeout(() => {
-
-        let matched = (roll === fixed1 || roll === fixed2);
-
-        if (currentPlayer === 1 && !bonusActive) p1Turns++;
-        if (currentPlayer === 2 && !bonusActive) p2Turns++;
-
-        if (currentPlayer === 1) {
-            addResultRow("p1Table", matched ? "Matched ✅" : "Unmatched ❌");
-        } else {
-            addResultRow("p2Table", matched ? "Matched ✅" : "Unmatched ❌");
-        }
-
-        if (matched) {
-
-            if (bonusActive) {
-                if (roll !== firstMatchedDice) {
-                    finishGame(currentPlayer === 1 ? player1Name : player2Name);
-                    return;
-                } else {
-                    return;
-                }
-            }
-
-            bonusActive = true;
-            firstMatchedDice = roll;
-
-            showBonus(currentPlayer === 1 ? player1Name : player2Name);
-
-            updateChances();
-            updateHighlight();
-            return;
-
-        } else {
-
-            bonusActive = false;
-            firstMatchedDice = null;
-
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
-        }
-
-        updateChances();
-
-        if (p1Turns >= MAX_TURNS && p2Turns >= MAX_TURNS) {
-            finishDraw();
-            return;
-        }
-
-        updateHighlight();
-
+        diceElement.classList.remove("roll-spin");
+        diceElement.innerText = diceFaces[roll];
+        handleRoll(roll);
     }, 300);
 }
 
+/* ================= HANDLE ROLL ================= */
 
+function handleRoll(roll) {
+
+    if (document.getElementById("winnerOverlay")) return;
+
+    let isP1 = currentPlayer === 1;
+
+    let fixedA = isP1 ? p1Fixed1 : p2Fixed1;
+    let fixedB = isP1 ? p1Fixed2 : p2Fixed2;
+
+    let step = isP1 ? p1Step : p2Step;
+    let bonusTurn = false;
+
+    // If both finished normal turns → draw
+    if (p1Turns >= MAX_TURNS && p2Turns >= MAX_TURNS) {
+        finishDraw();
+        return;
+    }
+
+    // Skip if player already used 5 normal turns
+    if (isP1 && p1Turns >= MAX_TURNS) {
+        currentPlayer = 2;
+        updateHighlight();
+        showCurrentPlayerFixedDice();
+        startRollTimer();
+        return;
+    }
+
+    if (!isP1 && p2Turns >= MAX_TURNS) {
+        currentPlayer = 1;
+        updateHighlight();
+        showCurrentPlayerFixedDice();
+        startRollTimer();
+        return;
+    }
+
+    // Sequential matching
+    if (step === 0 && roll === fixedA) {
+        step = 1;
+        bonusTurn = true;
+        showBonus(isP1 ? player1Name : player2Name);
+    }
+    else if (step === 1 && roll === fixedB) {
+        finishGame(isP1 ? player1Name : player2Name);
+        return;
+    }
+    else {
+        step = 0;
+    }
+
+    if (isP1) {
+        if (!bonusTurn) p1Turns++;
+        p1Step = step;
+    } else {
+        if (!bonusTurn) p2Turns++;
+        p2Step = step;
+    }
+
+    addResultRow(
+        isP1 ? "p1Table" : "p2Table",
+        diceFaces[roll] + (bonusTurn ? " 🔥" : "")
+    );
+
+    if (!bonusTurn) {
+        currentPlayer = isP1 ? 2 : 1;
+    }
+
+    updateHighlight();
+    showCurrentPlayerFixedDice();
+    startRollTimer();
+}
+
+/* ================= TABLE ================= */
 
 function addResultRow(tableId, result) {
-
     let table = document.getElementById(tableId);
-    if (!table) return;
-
     let row = table.insertRow();
-    let turnCell = row.insertCell(0);
-    let resultCell = row.insertCell(1);
-
-    let turnNumber = table.rows.length - 1;
-
-    turnCell.innerText = turnNumber;
-    resultCell.innerText = result;
+    row.insertCell(0).innerText = table.rows.length - 1;
+    row.insertCell(1).innerText = result;
 }
 
+/* ================= SHOW FIXED DICE ================= */
 
-
-function updateChances() {
-
-    let remaining1 = MAX_TURNS - p1Turns;
-    let remaining2 = MAX_TURNS - p2Turns;
-
-    let el = document.getElementById("remainingChances");
-
-    if (el) {
-        el.innerText =
-            player1Name + " Chances: " + remaining1 +
-            " | " +
-            player2Name + " Chances: " + remaining2;
-    }
-}
-
-
-
-function showBonus(name) {
-
-    let box = document.getElementById("bonusMsg");
-
-    if (box) {
-        box.innerText = "🔥 BONUS TURN : " + name;
-        box.style.display = "block";
-
-        setTimeout(() => {
-            box.style.display = "none";
-        }, 1500);
-    }
-}
-
-
-
-function updateHighlight() {
-
-    let p1Card = document.getElementById("p1Card");
-    let p2Card = document.getElementById("p2Card");
-
-    let turn1 = document.getElementById("turn1");
-    let turn2 = document.getElementById("turn2");
-
-    if (!p1Card || !p2Card) return;
+function showCurrentPlayerFixedDice() {
 
     if (currentPlayer === 1) {
-
-        p1Card.classList.add("player-active");
-        p2Card.classList.remove("player-active");
-
-        if (turn1) turn1.style.display = "inline-block";
-        if (turn2) turn2.style.display = "none";
-
+        document.getElementById("dice1").innerText = diceFaces[p1Fixed1];
+        document.getElementById("dice2").innerText = diceFaces[p1Fixed2];
     } else {
-
-        p2Card.classList.add("player-active");
-        p1Card.classList.remove("player-active");
-
-        if (turn2) turn2.style.display = "inline-block";
-        if (turn1) turn1.style.display = "none";
+        document.getElementById("dice1").innerText = diceFaces[p2Fixed1];
+        document.getElementById("dice2").innerText = diceFaces[p2Fixed2];
     }
 }
 
+/* ================= BONUS ================= */
 
-function finishDraw() {
-
-    localStorage.setItem("todayWinner", "Draw");
-    showWinnerScreen("🤝 Game Draw!");
+function showBonus(name) {
+    let box = document.getElementById("bonusMsg");
+    box.innerText = "🔥 BONUS TURN : " + name;
+    box.style.display = "block";
+    setTimeout(() => box.style.display = "none", 1500);
 }
 
-
+/* ================= FINISH ================= */
 
 function finishGame(winner) {
 
-    localStorage.setItem("todayWinner", winner);
-
-    let data = localStorage.getItem("allWins");
-    let players = data ? data.split(",") : [];
-
-    let found = false;
-
-    for (let i = 0; i < players.length; i++) {
-
-        let parts = players[i].split(":");
-        let name = parts[0];
-        let count = parseInt(parts[1]);
-
-        if (name === winner) {
-            count++;
-            players[i] = name + ":" + count;
-            found = true;
-        }
-    }
-
-    if (!found) {
-        players.push(winner + ":1");
-    }
-
-    localStorage.setItem("allWins", players.join(","));
-
+    clearTimeout(rollTimer);
+    saveMatchResult(winner);
     showWinnerScreen("🏆 " + winner + " Wins!");
 }
 
+function finishDraw() {
 
+    clearTimeout(rollTimer);
+    saveMatchResult("Draw");
+    showWinnerScreen("Game Draw!");
+}
+
+/* ================= SAVE MATCH ================= */
+
+function saveMatchResult(result) {
+
+    let history = JSON.parse(localStorage.getItem("gameHistory") || "[]");
+
+    history.push({
+        p1: player1Name,
+        p2: player2Name,
+        result: result
+    });
+
+    localStorage.setItem("gameHistory", JSON.stringify(history));
+}
+
+/* ================= LEADERBOARD ================= */
+
+function loadLeaderboard() {
+
+    let tbody = document.getElementById("leaderboardBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    let history = JSON.parse(localStorage.getItem("gameHistory") || "[]");
+
+    if (history.length === 0) {
+        let row = tbody.insertRow();
+        let cell = row.insertCell(0);
+        cell.colSpan = 3;
+        cell.innerText = "No games played yet";
+        return;
+    }
+
+    history.forEach(game => {
+        let row = tbody.insertRow();
+        row.insertCell(0).innerText = game.p1;
+        row.insertCell(1).innerText = game.p2;
+        row.insertCell(2).innerText = game.result;
+    });
+}
+
+/* ================= WINNER SCREEN ================= */
 
 function showWinnerScreen(text) {
 
+    if (document.getElementById("winnerOverlay")) return;
+
     let screen = document.createElement("div");
+    screen.id = "winnerOverlay";
     screen.className = "winner-screen";
 
     screen.innerHTML = `
@@ -287,48 +288,26 @@ function showWinnerScreen(text) {
     document.body.appendChild(screen);
 }
 
-
-
 function goHome() {
     window.location.href = "index.html";
 }
 
+/* ================= TIMER ================= */
 
-function loadLeaderboard() {
+function startRollTimer() {
 
-    let todayEl = document.getElementById("todayWinner");
-    let leaderEl = document.getElementById("allTimeLeader");
+    clearTimeout(rollTimer);
 
-    if (!todayEl || !leaderEl) return;
+    rollTimer = setTimeout(() => {
 
-    let today = localStorage.getItem("todayWinner");
-    let allWins = localStorage.getItem("allWins");
+        if (!document.getElementById("winnerOverlay")) {
+            rollDice();
+        }
 
-    if (today) {
-        todayEl.innerText = "Today Winner: " + today;
-    }
-
-    if (allWins) {
-
-        let players = allWins.split(",");
-        let topName = "";
-        let maxWins = 0;
-
-        players.forEach(player => {
-            let parts = player.split(":");
-            let name = parts[0];
-            let wins = parseInt(parts[1]);
-
-            if (wins > maxWins) {
-                maxWins = wins;
-                topName = name;
-            }
-        });
-
-        leaderEl.innerText =
-            "All Time Leader: " + topName + " (" + maxWins + " Wins)";
-    }
+    }, ROLL_TIMEOUT);
 }
+
+/* ================= RANDOM ================= */
 
 function random() {
     return Math.floor(Math.random() * 6);

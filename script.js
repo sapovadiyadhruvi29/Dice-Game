@@ -28,16 +28,13 @@ let countdownInterval = null;
 let timeLeft = 20;
 
 // ================= START GAME =================
-function startGame() {
-    playGame();
-}
+function startGame() { playGame(); }
 
 // ================= NAME VALIDATION =================
 function playGame() {
     let p1 = document.getElementById("p1").value.trim();
     let p2 = document.getElementById("p2").value.trim();
     let error = document.getElementById("error");
-
     let regex = /^[A-Za-z]+$/;
     error.innerText = "";
 
@@ -49,7 +46,6 @@ function playGame() {
 
     localStorage.setItem("player1Name", p1);
     localStorage.setItem("player2Name", p2);
-
     window.location.href = "game.html";
 }
 
@@ -58,10 +54,7 @@ function initGame() {
     player1Name = localStorage.getItem("player1Name");
     player2Name = localStorage.getItem("player2Name");
 
-    if (!player1Name || !player2Name) {
-        window.location.href = "index.html";
-        return;
-    }
+    if (!player1Name || !player2Name) { window.location.href = "index.html"; return; }
 
     document.getElementById("p1Name").innerText = player1Name;
     document.getElementById("p2Name").innerText = player2Name;
@@ -69,16 +62,12 @@ function initGame() {
     // Player 1 fixed dice
     p1Fixed1 = random();
     p1Fixed2 = random();
-    while (p1Fixed2 === p1Fixed1) {
-        p1Fixed2 = random();
-    }
+    while (p1Fixed2 === p1Fixed1) p1Fixed2 = random();
 
     // Player 2 fixed dice
     p2Fixed1 = random();
     p2Fixed2 = random();
-    while (p2Fixed2 === p2Fixed1) {
-        p2Fixed2 = random();
-    }
+    while (p2Fixed2 === p2Fixed1) p2Fixed2 = random();
 
     document.getElementById("dice1").innerText = diceFaces[p1Fixed1];
     document.getElementById("dice2").innerText = diceFaces[p1Fixed2];
@@ -91,103 +80,94 @@ function initGame() {
 // ================= ROLL DICE =================
 function rollDice() {
     clearInterval(countdownInterval);
-
     let roll = random();
     document.getElementById("rollingDice").innerText = diceFaces[roll];
 
-    if (currentPlayer === 1 && p1Turns < MAX_TURNS) {
-        handleRoll(roll, "p1");
-    } else if (currentPlayer === 2 && p2Turns < MAX_TURNS) {
-        handleRoll(roll, "p2");
-    }
+    if (currentPlayer === 1 && p1Turns < MAX_TURNS) handleRoll(roll, "p1");
+    else if (currentPlayer === 2 && p2Turns < MAX_TURNS) handleRoll(roll, "p2");
 }
 
 // ================= HANDLE ROLL =================
 function handleRoll(roll, player) {
     let matched = false;
+    let bonusTurn = false;
 
     if (player === "p1") {
-        // First dice match → bonus turn
         if (!p1FirstMatch && roll === p1Fixed1) {
             p1FirstMatch = true;
             matched = true;
+            bonusTurn = true;
             showBonus(player1Name);
-            addToTable("p1Table", p1Turns + 1, diceFaces[roll]); // show roll but do NOT increment turn
-        }
-        // Second dice match → wins
-        else if (p1FirstMatch && !p1SecondMatch && roll === p1Fixed2) {
+            addToTable("p1Table", "Bonus", diceFaces[roll], "✔"); // bonus turn, not counted
+        } else if (p1FirstMatch && !p1SecondMatch && roll === p1Fixed2) {
             p1SecondMatch = true;
             p1Turns++;
-            addToTable("p1Table", p1Turns, diceFaces[roll]);
+            addToTable("p1Table", p1Turns, diceFaces[roll], "✔");
             finishGame(player1Name);
             return;
-        }
-        // No match → reduce energy, increment turn, switch
-        if (!matched) {
+        } else {
             p1Energy = Math.max(0, p1Energy - 20);
             p1Turns++;
-            addToTable("p1Table", p1Turns, diceFaces[roll]);
+            addToTable("p1Table", p1Turns, diceFaces[roll], "❌");
             currentPlayer = 2;
         }
+        if (bonusTurn) currentPlayer = 1; // keep turn
     } else {
         if (!p2FirstMatch && roll === p2Fixed1) {
             p2FirstMatch = true;
             matched = true;
+            bonusTurn = true;
             showBonus(player2Name);
-            addToTable("p2Table", p2Turns + 1, diceFaces[roll]);
+            addToTable("p2Table", "Bonus", diceFaces[roll], "✔");
         } else if (p2FirstMatch && !p2SecondMatch && roll === p2Fixed2) {
             p2SecondMatch = true;
             p2Turns++;
-            addToTable("p2Table", p2Turns, diceFaces[roll]);
+            addToTable("p2Table", p2Turns, diceFaces[roll], "✔");
             finishGame(player2Name);
             return;
-        }
-        if (!matched) {
+        } else {
             p2Energy = Math.max(0, p2Energy - 20);
             p2Turns++;
-            addToTable("p2Table", p2Turns, diceFaces[roll]);
+            addToTable("p2Table", p2Turns, diceFaces[roll], "❌");
             currentPlayer = 1;
         }
+        if (bonusTurn) currentPlayer = 2;
     }
 
     updateProgressBars();
     updateHighlight();
 
-    // Check draw condition
+    // Check draw
     if (p1Turns >= MAX_TURNS && p2Turns >= MAX_TURNS) {
         if (!p1SecondMatch && !p2SecondMatch) finishDraw();
         return;
     }
 
-    // Continue timer for next turn
-    if ((currentPlayer === 1 && p1Turns < MAX_TURNS) || (currentPlayer === 2 && p2Turns < MAX_TURNS)) {
-        startRollTimer();
-    }
+    // Start timer again
+    if ((currentPlayer === 1 && p1Turns < MAX_TURNS) || (currentPlayer === 2 && p2Turns < MAX_TURNS)) startRollTimer();
 }
 
 // ================= TABLE FUNCTION =================
-function addToTable(tableId, turn, roll) {
+function addToTable(tableId, turn, roll, match) {
     const table = document.getElementById(tableId);
     if (!table) return;
 
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${turn}</td><td>${roll}</td>`;
+    row.innerHTML = `<td>${turn}</td><td>${roll}</td><td>${match}</td>`;
     table.appendChild(row);
 }
 
 // ================= TIMER =================
 function startRollTimer() {
     clearInterval(countdownInterval);
-
     timeLeft = 20;
     const timerEl = document.getElementById("timer");
     if (!timerEl) return;
-
     timerEl.innerText = timeLeft;
+
     countdownInterval = setInterval(() => {
         timeLeft--;
         timerEl.innerText = timeLeft;
-
         if (timeLeft <= 0) {
             clearInterval(countdownInterval);
             rollDice();
@@ -206,7 +186,6 @@ function showBonus(name) {
     const box = document.getElementById("bonusMsg");
     box.innerText = "🔥 BONUS TURN : " + name;
     box.style.display = "block";
-
     setTimeout(() => box.style.display = "none", 1500);
 }
 

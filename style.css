@@ -16,10 +16,10 @@ body {
 
 .title {
     text-align: center;
-    font-size: 90px;
+    font-size: 6vw; /* responsive font */
     font-weight: 900;
-    letter-spacing: 8px;
-    margin: 40px 0 10px 0;
+    letter-spacing: 0.5vw;
+    margin: 5vh 0 2vh 0;
     text-transform: uppercase;
     color: #ffffff;
     text-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
@@ -27,9 +27,9 @@ body {
 
 .tagline {
     text-align: center;
-    font-size: 20px;
+    font-size: 4vw;
     color: #94a3b8;
-    margin-bottom: 50px;
+    margin-bottom: 5vh;
     letter-spacing: 1px;
     font-weight: 500;
 }
@@ -37,23 +37,23 @@ body {
 .home-wrapper {
     display: flex;
     justify-content: space-between;
-    width: 85%;
-    margin: 60px auto;
-    gap: 40px;
+    width: 90%;
+    margin: 5vh auto;
+    gap: 20px;
     flex-wrap: wrap;
 }
 
 .home-card:first-child {
-    flex: 0 0 58%;
+    flex: 1 1 58%;
 }
 
 .home-card:last-child {
-    flex: 0 0 38%;
+    flex: 1 1 38%;
 }
 
 .home-card {
-    padding: 40px;
-    border-radius: 18px;
+    padding: 3vw;
+    border-radius: 1rem;
     background: rgba(30, 41, 59, 0.9);
     border: 1px solid #334155;
     transition: all 0.3s ease;
@@ -67,8 +67,8 @@ body {
 
 input {
     width: 95%;
-    padding: 14px;
-    margin: 14px 0;
+    padding: 12px;
+    margin: 1vh 0;
     border-radius: 10px;
     border: 1px solid #334155;
     background: #0f172a;
@@ -109,15 +109,15 @@ input:focus {
 /* ===== Leaderboard Upgrade ===== */
 
 .leaderboard h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 2vw;
+    margin-bottom: 2vh;
     color: #22d3ee;
     text-shadow: 0 0 10px #3b82f6;
 }
 
 .leaderboard p {
-    font-size: 16px;
-    margin: 18px 0;
+    font-size: 1.2vw;
+    margin: 1.5vh 0;
     padding: 12px;
     background: rgba(15, 23, 42, 0.7);
     border-radius: 10px;
@@ -137,18 +137,18 @@ input:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 0;
+    padding: 2vh 2vw;
 }
 
 .game-title {
-    font-size: 52px;
+    font-size: 5vw;
     font-weight: 900;
-    letter-spacing: 6px;
+    letter-spacing: 0.5vw;
     text-transform: uppercase;
     color: #22d3ee;
     text-shadow: 0 0 15px #3b82f6, 0 0 25px #22d3ee;
     animation: titleGlow 2s infinite alternate;
-    margin-bottom: 25px;
+    margin-bottom: 2vh;
 }
 
 @keyframes titleGlow {
@@ -162,22 +162,25 @@ input:focus {
     width: 90%;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 25px;
+    margin-bottom: 2vh;
+    flex-wrap: wrap;
 }
 
 .progress-box span {
     color: #facc15;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 0.9rem;
 }
 
 .progress {
-    width: 200px;
+    width: 40vw;
+    max-width: 250px;
     height: 18px;
     background: #0f172a;
     border-radius: 12px;
     border: 1px solid #334155;
     overflow: hidden;
+    margin: 1vh 0;
 }
 
 .progress-fill {
@@ -192,12 +195,13 @@ input:focus {
 .fixed-dice {
     display: flex;
     justify-content: center;
-    gap: 120px;
-    margin-bottom: 30px;
+    gap: 10vw;
+    margin-bottom: 3vh;
 }
 
 .dice-box .dice {
-    font-size: 110px;
+    font-size: 10vw;
+    max-font-size: 110px;
     text-shadow: 0 0 20px #3b82f6;
 }
 
@@ -206,17 +210,18 @@ input:focus {
 .players {
     display: flex;
     justify-content: center;
-    gap: 60px;
-    margin-bottom: 40px;
+    gap: 5vw;
+    margin-bottom: 3vh;
+    flex-wrap: wrap;
 }
 
 .player-card {
-    padding: 18px 30px;
+    padding: 1.5vh 2vw;
     border-radius: 14px;
     background: rgba(30,41,59,0.9);
     border: 1px solid #334155;
     text-align: center;
-    min-width: 200px;
+    min-width: 180px;
 }
 
 .player-active {
@@ -237,9 +242,10 @@ input:focus {
 /* ===== Rolling Dice ===== */
 
 .big-dice {
-    font-size: 150px;
+    font-size: 20vw;
+    max-font-size: 150px;
     text-shadow: 0 0 25px #3b82f6;
-    margin-bottom: 20px;
+    margin-bottom: 2vh;
 }
 
 .roll-spin {
@@ -277,12 +283,13 @@ input:focus {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 1vh 1vw;
 }
 
 .winner-box {
     background: #1e293b;
-    padding: 40px;
-    border-radius: 18px;
+    padding: 3vh 3vw;
+    border-radius: 1rem;
     text-align: center;
     border: 1px solid #334155;
     box-shadow: 0 0 40px rgba(59,130,246,0.9);
@@ -295,8 +302,8 @@ input:focus {
 }
 
 .winner-box h1 {
-    margin-bottom: 20px;
-    font-size: 32px;
+    margin-bottom: 2vh;
+    font-size: 4vw;
     font-weight: 800;
     color: #22d3ee;
 }
@@ -314,6 +321,9 @@ input:focus {
 .winner-box button:hover {
     background: #2563eb;
 }
+
+/* ===== Leaderboard Table ===== */
+
 .leaderboard-table {
     width: 100%;
     border-collapse: collapse;
@@ -335,4 +345,27 @@ input:focus {
 
 .leaderboard-table tr:hover {
     background: rgba(59, 130, 246, 0.1);
+}
+
+/* ================= MEDIA QUERIES ================= */
+
+@media screen and (max-width: 1024px) {
+    .players { gap: 3vw; }
+    .fixed-dice { gap: 8vw; }
+    .progress { width: 35vw; }
+}
+
+@media screen and (max-width: 768px) {
+    .game-title { font-size: 7vw; }
+    .big-dice { font-size: 25vw; }
+    .player-card { min-width: 150px; padding: 1vh 1.5vw; }
+    .progress { width: 40vw; }
+}
+
+@media screen and (max-width: 480px) {
+    .game-title { font-size: 9vw; }
+    .big-dice { font-size: 30vw; }
+    .players { flex-direction: column; gap: 3vh; }
+    .fixed-dice { gap: 5vw; flex-direction: column; }
+    .progress { width: 80%; }
 }

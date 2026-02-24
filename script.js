@@ -80,11 +80,30 @@ function initGame() {
 // ================= ROLL DICE =================
 function rollDice() {
     clearInterval(countdownInterval);
-    let roll = random();
-    document.getElementById("rollingDice").innerText = diceFaces[roll];
 
-    if (currentPlayer === 1 && p1Turns < MAX_TURNS) handleRoll(roll, "p1");
-    else if (currentPlayer === 2 && p2Turns < MAX_TURNS) handleRoll(roll, "p2");
+    let roll = random(); // The final dice roll
+
+    const diceEl = document.getElementById("rollingDice");
+    if (!diceEl) return;
+
+    let elapsed = 0;
+    const duration = 1000; // total animation duration in ms
+    const intervalTime = 100; // time between face changes
+
+    // Animate dice rolling
+    const animInterval = setInterval(() => {
+        diceEl.innerText = diceFaces[random()]; // show random face
+        elapsed += intervalTime;
+
+        if (elapsed >= duration) {
+            clearInterval(animInterval);
+            diceEl.innerText = diceFaces[roll]; // show final roll
+
+            // After animation, handle the roll
+            if (currentPlayer === 1 && p1Turns < MAX_TURNS) handleRoll(roll, "p1");
+            else if (currentPlayer === 2 && p2Turns < MAX_TURNS) handleRoll(roll, "p2");
+        }
+    }, intervalTime);
 }
 
 // ================= HANDLE ROLL =================
@@ -247,4 +266,21 @@ function updateHighlight() {
         turn2.style.display = "inline";
         turn1.style.display = "none";
     }
+}
+function diceRollAnimation(finalRoll, targetElId, duration = 1000, intervalTime = 100) {
+    const targetEl = document.getElementById(targetElId);
+    if (!targetEl) return;
+
+    let elapsed = 0;
+    const animInterval = setInterval(() => {
+        // Show random dice face
+        targetEl.innerText = diceFaces[random()];
+        elapsed += intervalTime;
+
+        if (elapsed >= duration) {
+            clearInterval(animInterval);
+            // Show final roll
+            targetEl.innerText = diceFaces[finalRoll];
+        }
+    }, intervalTime);
 }

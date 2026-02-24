@@ -14,6 +14,9 @@
 
         <!-- Game Title -->
         <h2 class="game-title">DICE BATTLE</h2>
+        <h3 style="margin-bottom:10px;">
+            Auto Roll In: <span id="timer">20</span>s
+        </h3>
 
         <!-- Energy / Progress Bars -->
         <div class="progress-section">
@@ -94,24 +97,19 @@
     <div id="winnerScreen" class="winner-screen" style="display:none;">
         <div class="winner-box">
             <h1 id="winnerText"></h1>
-            <button onclick="location.reload()">🏠 Home</button>
+            <button onclick="goHome()">🏠 Home</button>
+        </div>
+    </div>
+    <!-- Draw Screen Overlay -->
+    <div id="drawScreen" class="winner-screen" style="display:none;">
+        <div class="winner-box">
+            <h1>🤝 Game Draw!</h1>
+            <button onclick="goHome()">🏠 Home</button>
         </div>
     </div>
 
     <!-- Bonus Message -->
-    <div id="bonusMsg" style="
-    position: fixed;
-    top: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #facc15;
-    color: black;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    display: none;
-    z-index: 9999;
-"></div>
+    <div id="bonusMsg"></div>
 
     <script src="script.js"></script>
 </body>

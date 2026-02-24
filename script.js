@@ -92,88 +92,76 @@ function initGame() {
 function rollDice() {
     clearInterval(countdownInterval);
 
-    // If both players finished 5 turns, finish game as draw
-    if (p1Turns >= MAX_TURNS && p2Turns >= MAX_TURNS) {
-        finishDraw();
-        return;
-    }
-
     let roll = random();
     document.getElementById("rollingDice").innerText = diceFaces[roll];
 
-    if (currentPlayer === 1) {
-        if (p1Turns < MAX_TURNS) {
-            p1Turns++;
-            addToTable("p1Table", p1Turns, diceFaces[roll]);
-            handleRoll(roll);
-        } else {
-            // Skip to Player 2 if Player 1 already finished 5 turns
-            currentPlayer = 2;
-            updateHighlight();
-            startRollTimer();
-        }
-    } else {
-        if (p2Turns < MAX_TURNS) {
-            p2Turns++;
-            addToTable("p2Table", p2Turns, diceFaces[roll]);
-            handleRoll(roll);
-        } else {
-            // Skip to Player 1 if Player 2 already finished 5 turns
-            currentPlayer = 1;
-            updateHighlight();
-            startRollTimer();
-        }
+    if (currentPlayer === 1 && p1Turns < MAX_TURNS) {
+        handleRoll(roll, "p1");
+    } else if (currentPlayer === 2 && p2Turns < MAX_TURNS) {
+        handleRoll(roll, "p2");
     }
 }
 
 // ================= HANDLE ROLL =================
-function handleRoll(roll) {
+function handleRoll(roll, player) {
     let matched = false;
 
-    if (currentPlayer === 1 && p1Turns <= MAX_TURNS) {
+    if (player === "p1") {
+        // First dice match → bonus turn
         if (!p1FirstMatch && roll === p1Fixed1) {
             p1FirstMatch = true;
             matched = true;
             showBonus(player1Name);
-        } else if (p1FirstMatch && !p1SecondMatch && roll === p1Fixed2) {
+            addToTable("p1Table", p1Turns + 1, diceFaces[roll]); // show roll but do NOT increment turn
+        }
+        // Second dice match → wins
+        else if (p1FirstMatch && !p1SecondMatch && roll === p1Fixed2) {
             p1SecondMatch = true;
+            p1Turns++;
+            addToTable("p1Table", p1Turns, diceFaces[roll]);
             finishGame(player1Name);
             return;
         }
-
+        // No match → reduce energy, increment turn, switch
         if (!matched) {
             p1Energy = Math.max(0, p1Energy - 20);
+            p1Turns++;
+            addToTable("p1Table", p1Turns, diceFaces[roll]);
+            currentPlayer = 2;
         }
-
-        currentPlayer = 2; // Switch turn only if not matched sequence
-
-    } else if (currentPlayer === 2 && p2Turns <= MAX_TURNS) {
+    } else {
         if (!p2FirstMatch && roll === p2Fixed1) {
             p2FirstMatch = true;
             matched = true;
             showBonus(player2Name);
+            addToTable("p2Table", p2Turns + 1, diceFaces[roll]);
         } else if (p2FirstMatch && !p2SecondMatch && roll === p2Fixed2) {
             p2SecondMatch = true;
+            p2Turns++;
+            addToTable("p2Table", p2Turns, diceFaces[roll]);
             finishGame(player2Name);
             return;
         }
-
         if (!matched) {
             p2Energy = Math.max(0, p2Energy - 20);
+            p2Turns++;
+            addToTable("p2Table", p2Turns, diceFaces[roll]);
+            currentPlayer = 1;
         }
-
-        currentPlayer = 1; // Switch turn only if not matched sequence
     }
 
     updateProgressBars();
     updateHighlight();
-    startRollTimer();
 
-    // ✅ Finish draw only if BOTH players have reached 5 turns and NO one matched both dice
+    // Check draw condition
     if (p1Turns >= MAX_TURNS && p2Turns >= MAX_TURNS) {
-        if (!p1SecondMatch && !p2SecondMatch) {
-            finishDraw();
-        }
+        if (!p1SecondMatch && !p2SecondMatch) finishDraw();
+        return;
+    }
+
+    // Continue timer for next turn
+    if ((currentPlayer === 1 && p1Turns < MAX_TURNS) || (currentPlayer === 2 && p2Turns < MAX_TURNS)) {
+        startRollTimer();
     }
 }
 
@@ -183,15 +171,7 @@ function addToTable(tableId, turn, roll) {
     if (!table) return;
 
     const row = document.createElement("tr");
-    const cell1 = document.createElement("td");
-    const cell2 = document.createElement("td");
-
-    cell1.textContent = turn;
-    cell2.textContent = roll;
-
-    row.appendChild(cell1);
-    row.appendChild(cell2);
-
+    row.innerHTML = `<td>${turn}</td><td>${roll}</td>`;
     table.appendChild(row);
 }
 
@@ -201,11 +181,9 @@ function startRollTimer() {
 
     timeLeft = 20;
     const timerEl = document.getElementById("timer");
-
     if (!timerEl) return;
 
     timerEl.innerText = timeLeft;
-
     countdownInterval = setInterval(() => {
         timeLeft--;
         timerEl.innerText = timeLeft;
@@ -216,91 +194,60 @@ function startRollTimer() {
         }
     }, 1000);
 }
+
 // ================= PROGRESS =================
 function updateProgressBars() {
     document.getElementById("p1Progress").style.width = p1Energy + "%";
     document.getElementById("p2Progress").style.width = p2Energy + "%";
-
-    // Only declare winner if a player matched both fixed dice sequence
-    if (p1Energy <= 0 && p1SecondMatch) finishGame(player2Name);
-    if (p2Energy <= 0 && p2SecondMatch) finishGame(player1Name);
 }
-
 
 // ================= BONUS =================
 function showBonus(name) {
-    let box = document.getElementById("bonusMsg");
+    const box = document.getElementById("bonusMsg");
     box.innerText = "🔥 BONUS TURN : " + name;
     box.style.display = "block";
 
-    setTimeout(() => {
-        box.style.display = "none";
-    }, 1500);
+    setTimeout(() => box.style.display = "none", 1500);
 }
 
 // ================= FINISH =================
 function finishGame(winner) {
     saveLeaderboard(winner);
-
-    const winnerScreen = document.getElementById("winnerScreen");
-    const winnerText = document.getElementById("winnerText");
-
-    winnerText.innerText = `🏆 ${winner} Wins!`;
-    winnerScreen.style.display = "flex";
-
+    document.getElementById("winnerText").innerText = `🏆 ${winner} Wins!`;
+    document.getElementById("winnerScreen").style.display = "flex";
     clearInterval(countdownInterval);
 }
 
 // ================= DRAW =================
 function finishDraw() {
     saveLeaderboard("Draw");
-
-    const drawScreen = document.getElementById("drawScreen");
-    drawScreen.style.display = "flex";
-
-    clearInterval(countdownInterval); // Stop timer
+    document.getElementById("drawScreen").style.display = "flex";
+    clearInterval(countdownInterval);
 }
 
 // ================= LEADERBOARD =================
 function saveLeaderboard(result) {
     let history = JSON.parse(localStorage.getItem("leaderboard")) || [];
-
-    history.push({
-        player1: player1Name,
-        player2: player2Name,
-        result: result
-    });
-
+    history.push({ player1: player1Name, player2: player2Name, result });
     localStorage.setItem("leaderboard", JSON.stringify(history));
 }
 
 function loadLeaderboard() {
-    let tbody = document.getElementById("leaderboardBody");
+    const tbody = document.getElementById("leaderboardBody");
     if (!tbody) return;
-
     tbody.innerHTML = "";
 
-    let history = JSON.parse(localStorage.getItem("leaderboard")) || [];
-
-    history.forEach((game) => {
-        let row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${game.player1}</td>
-            <td>${game.player2}</td>
-            <td>${game.result}</td>
-        `;
+    const history = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    history.forEach(game => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${game.player1}</td><td>${game.player2}</td><td>${game.result}</td>`;
         tbody.appendChild(row);
     });
 }
 
 // ================= UTIL =================
-function random() {
-    return Math.floor(Math.random() * 6);
-}
-
-function goHome() {
-    window.location.href = "index.html";
-}
+function random() { return Math.floor(Math.random() * 6); }
+function goHome() { window.location.href = "index.html"; }
 
 // ================= HIGHLIGHT =================
 function updateHighlight() {
@@ -308,7 +255,6 @@ function updateHighlight() {
     const p2Box = document.getElementById("p2Card");
     const turn1 = document.getElementById("turn1");
     const turn2 = document.getElementById("turn2");
-
     if (!p1Box || !p2Box) return;
 
     if (currentPlayer === 1) {

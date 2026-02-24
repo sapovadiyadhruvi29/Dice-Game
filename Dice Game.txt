@@ -1,0 +1,48 @@
+First, the user lands on index.html which contains the Start Game button.
+When clicked, it redirects to game.html where the main game is implemented.
+When the game loads, initial scores and turn values are set.
+When the Roll button is clicked, two random dice values are generated.
+Dice images update according to the random numbers.
+The game checks conditions like matching previous dice or tie.
+Scores are updated and displayed in the leaderboard.
+Turns switch automatically based on rules.
+The game continues until a winner is determined.
+
+User enters names
+Validation happens
+Names stored in localStorage
+Game page loads
+Two fixed dice generated
+Players take turns rolling
+If matched → bonus mode
+If unmatched → turn switches
+After 5 turns each → draw
+If bonus condition satisfied → winner declared
+Leaderboard updated
+Winner screen displayed
+
+This is a turn-based two-player dice matching game built using JavaScript and DOM manipulation. Player names are validated and stored using localStorage. Two fixed dice values are generated at game start. Players take turns rolling a dice, and if their roll matches the fixed dice, bonus mode activates. The game tracks turns, displays results dynamically in tables, and determines a winner or draw based on conditions. Leaderboard data is persisted in localStorage to maintain all-time winners.
+
+
+
+Main Explanation 
+
+Dice Battle – Game Explanation (One Page)
+
+Dice Battle is a two-player turn-based dice matching game. The objective of the game is to match two fixed dice in the correct sequence before your opponent does.
+
+At the start of the game, both players enter their names. Once the game begins, each player is assigned their own two fixed dice. These fixed dice are generated randomly and are different for each player. A player can only match their own fixed dice. Cross matching is not allowed.
+
+For example, if Player 1’s fixed dice are 2 and 5, then Player 1 must first roll a 2 and then roll a 5 to win. The order is important. Rolling 5 before 2 does not count. The sequence must always be fixed1 followed by fixed2.
+
+Each player is given 5 normal chances (turns). A turn means one dice roll. If a player successfully matches their first fixed dice, they receive a bonus turn. Bonus turns do not reduce the 5 normal chances. However, if the roll does not match the required sequence, the turn switches to the other player.
+
+The game also includes an auto-roll feature. Each player has 20 seconds to roll the dice. If no action is taken within 20 seconds, the system automatically rolls the dice. This ensures the game continues smoothly without delays.
+
+A player wins if they successfully match both of their fixed dice in the correct order. If both players use all 5 normal turns and neither completes the sequence, the game ends in a draw.
+
+After every match, the result is saved in a leaderboard table on the home page. The leaderboard displays Player 1 name, Player 2 name, and the result (Winner name or Draw). All match history is stored and shown for future reference.
+
+In summary, Dice Battle is a competitive two-player game based on luck and sequence logic, with fixed chances, bonus turns, auto-roll functionality, and a persistent leaderboard system.
+
+---

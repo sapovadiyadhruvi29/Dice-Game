@@ -1,5 +1,3 @@
-/* ================= GLOBAL ================= */
-
 * {
     margin: 0;
     padding: 0;
@@ -12,15 +10,13 @@ body {
     color: #e2e8f0;
 }
 
-/* ================= HOME SCREEN ================= */
 
 .title {
     text-align: center;
     font-size: 6vw;
-    /* responsive font */
     font-weight: 900;
     letter-spacing: 0.5vw;
-    margin: 5vh 0 2vh 0;
+    margin: 3vh 0 2vh 0;
     text-transform: uppercase;
     color: #ffffff;
     text-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
@@ -39,17 +35,19 @@ body {
     display: flex;
     justify-content: space-between;
     width: 90%;
-    margin: 5vh auto;
+    margin: 0 auto;
     gap: 20px;
     flex-wrap: wrap;
 }
 
 .home-card:first-child {
     flex: 1 1 58%;
+    height: 300px;
 }
 
 .home-card:last-child {
     flex: 1 1 38%;
+    height: 400px;
 }
 
 .home-card {
@@ -72,7 +70,7 @@ input {
     margin: 1vh 0;
     border-radius: 10px;
     border: 1px solid #334155;
-    background: #0f172a;
+    background: #010309;
     color: white;
     font-size: 16px;
     transition: 0.3s;
@@ -107,10 +105,35 @@ input:focus {
     font-weight: 500;
 }
 
-/* ===== Leaderboard Upgrade ===== */
+.leaderboard {
+    height: 400px;
+    overflow-y: auto;
+}
+
+
+.leaderboard::-webkit-scrollbar {
+    width: 8px;
+}
+
+
+.leaderboard::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    min-height: 30px;
+}
+
+.leaderboard::-webkit-scrollbar-thumb {
+    background: linear-gradient(120deg, #1e293b, #0f172a);
+    border-radius: 10px;
+}
+
+
+.leaderboard::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #cca7c4, #00f5ff);
+}
 
 .leaderboard h2 {
-    font-size: 2vw;
+    font-size: 3vw;
     margin-bottom: 2vh;
     color: #22d3ee;
     text-shadow: 0 0 10px #3b82f6;
@@ -130,7 +153,7 @@ input:focus {
     background: rgba(30, 41, 59, 0.9);
     transform: translateX(5px);
 }
-/* ===== Leaderboard Table ===== */
+
 
 .leaderboard-table {
     width: 100%;
@@ -154,44 +177,48 @@ input:focus {
 .leaderboard-table tr:hover {
     background: rgba(59, 130, 246, 0.1);
 }
-/* ================= GAME SCREEN (UPDATED + RESPONSIVE) ================= */
+
 
 .game-container {
-    height: 100vh; /* Full screen */
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Spread evenly */
-    padding: 20px;
+    justify-content: space-between;
 }
 
-/* ===== TITLE ===== */
-
 .game-title {
-    font-size: clamp(28px, 4vw, 60px);
+    font-size: 4vw;
     font-weight: 900;
     letter-spacing: 6px;
     text-transform: uppercase;
-    background: linear-gradient(90deg, #22d3ee, #3b82f6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     margin-bottom: 25px;
 }
 
-/* ===== PROGRESS SECTION ===== */
-
 .progress-section {
-    width: 100%;
-    max-width: 900px;
+    width: 900px;
     display: flex;
     justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
+    gap: 60px;
+    margin-bottom: 10px;
 }
 
 .progress-box {
-    flex: 1 1 45%;
+    flex: 0 0 40%;
+    display: flex;
+    flex-direction: column;
+}
+
+#player1Title {
+    margin-left: 0;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+#player2Title {
+    margin-right: 0;
+    margin-bottom: 10px;
+    align-self: flex-end;
 }
 
 .progress {
@@ -209,14 +236,12 @@ input:focus {
     transition: width 0.4s ease;
 }
 
-/* ===== FIXED DICE ===== */
 
 .fixed-dice {
     display: flex;
     justify-content: center;
-    gap: 60px;
+    gap: 100px;
     margin-bottom: 35px;
-    flex-wrap: wrap;
 }
 
 .dice-box .dice {
@@ -224,7 +249,50 @@ input:focus {
     text-shadow: 0 0 25px #3b82f6;
 }
 
-/* ===== PLAYERS LAYOUT ===== */
+.roll-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.big-dice {
+    font-size: 120px;
+    margin-bottom: 5px;
+}
+
+.roll-spin {
+    animation: spinDice 0.4s linear;
+}
+
+@keyframes spinDice {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.roll-btn {
+    padding: 14px 40px;
+    font-weight: 700;
+    border-radius: 50px;
+    border: 2px solid #22d3ee;
+    background: transparent;
+    color: #22d3ee;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin-bottom: 30px;
+}
+
+.roll-btn:hover {
+    background: #22d3ee;
+    color: #0f172a;
+    box-shadow: 0 0 20px #22d3ee;
+    transform: scale(1.00);
+}
 
 .players {
     display: flex;
@@ -236,16 +304,16 @@ input:focus {
     max-width: 1200px;
 }
 
-/* Each player section */
-
 .player-section {
     flex: 1 1 300px;
     max-width: 350px;
 }
 
-/* Player card */
-
 .player-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
     padding: 20px;
     border-radius: 18px;
     background: rgba(30, 41, 59, 0.9);
@@ -270,18 +338,16 @@ input:focus {
     color: #facc15;
     border: 1px solid #facc15;
     box-shadow: 0 0 15px rgba(250, 204, 21, 0.6);
-    margin-top: 10px;
+    margin-top: 20px;
     letter-spacing: 1px;
 }
-
-/* ===== TRANSPARENT GAME TABLE ===== */
 
 .table-wrapper {
     margin-top: 15px;
     padding: 10px;
     border-radius: 15px;
     background: transparent;
-    border: none;
+    border: 1px solid rgb(125, 125, 232);
 }
 
 .game-table {
@@ -291,118 +357,112 @@ input:focus {
 }
 
 .game-table th {
-    padding: 10px;
+    padding: 5px;
     font-size: 13px;
     text-transform: uppercase;
     color: #22d3ee;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-table td {
-    padding: 10px;
-    font-size: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 15px;
+    font-size: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-
-/* Matched Style */
 
 .matched {
     color: #22c55e;
     font-weight: bold;
 }
 
-/* Unmatched Style */
-
 .unmatched {
     color: #ef4444;
     font-weight: bold;
 }
 
-/* ===== ROLL SECTION ===== */
-
-.roll-section {
+.winner-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    z-index: 999;
+    font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
 }
-
-.big-dice {
-    font-size: clamp(90px, 10vw, 150px);
-    margin-bottom: 20px;
-}
-
-.roll-spin {
-    animation: spinDice 0.4s linear;
-}
-
-@keyframes spinDice {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* ===== ROLL BUTTON ===== */
-
-.roll-btn {
-    padding: 14px 40px;
-    font-weight: 700;
-    border-radius: 50px;
-    border: 2px solid #22d3ee;
-    background: transparent;
-    color: #22d3ee;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.roll-btn:hover {
-    background: #22d3ee;
-    color: #0f172a;
-    box-shadow: 0 0 20px #22d3ee;
-    transform: scale(1.05);
-}
-
-/* ===== WINNER BOX UPGRADE ===== */
 
 .winner-box {
-    background: rgba(15, 23, 42, 0.95);
-    padding: 50px 40px;
-    border-radius: 25px;
-    border: 2px solid #22d3ee;
-    box-shadow: 0 0 40px rgba(34, 211, 238, 0.6);
+    background: #111;
+    padding: 40px 60px;
+    border-radius: 20px;
     text-align: center;
-    backdrop-filter: blur(10px);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+    animation: fadeIn 0.5s ease-out;
 }
 
-.winner-box h1 {
-    font-size: clamp(22px, 4vw, 32px);
+#winnerText {
+    font-size: 3em;
     margin-bottom: 30px;
-    color: #22d3ee;
-    letter-spacing: 2px;
+    color: #ffd700;
+    animation: bounce 1s infinite;
 }
-
-/* PREMIUM HOME BUTTON */
 
 .winner-box button {
-    padding: 14px 40px;
-    border-radius: 50px;
+    padding: 12px 25px;
+    font-size: 1.5em;
     border: none;
-    font-weight: 700;
-    font-size: 15px;
+    border-radius: 15px;
     cursor: pointer;
-    background: linear-gradient(135deg, #22d3ee, #3b82f6);
-    color: white;
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
-    transition: 0.3s ease;
+    background: #4aca68;
+    color: #fff;
+    transition: all 0.3s ease;
 }
 
 .winner-box button:hover {
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(34, 211, 238, 0.7);
+    background: #218838;
+    transform: scale(1.05);
 }
 
-/* ================= RESPONSIVE ================= */
+@keyframes bounce {
 
-/* Tablet */
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 
 @media (max-width: 992px) {
     .players {
@@ -410,7 +470,6 @@ input:focus {
     }
 }
 
-/* Mobile */
 
 @media (max-width: 768px) {
 
@@ -433,19 +492,5 @@ input:focus {
 
     .fixed-dice {
         gap: 30px;
-    }
-}
-
-/* Small Phone */
-
-@media (max-width: 480px) {
-
-    .roll-btn {
-        width: 100%;
-        max-width: 250px;
-    }
-
-    .dice-box .dice {
-        font-size: 80px;
     }
 }

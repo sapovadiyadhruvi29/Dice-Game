@@ -1,11 +1,9 @@
-const diceFaces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 
+const diceFaces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 let currentPlayer = 1;
 
-let p1Fixed;
-let p2Fixed;
-
-let bonusMode = false;
+let Fixed1;
+let Fixed2;
 
 let player1Name = "";
 let player2Name = "";
@@ -18,14 +16,18 @@ const MAX_TURNS = 5;
 let countdownInterval = null;
 let timeLeft = 20;
 
-// ================= START GAME =================
+let p1Stage = 0;
+let p2Stage = 0;
+
+let p1Energy = 100;
+let p2Energy = 100;
+const ENERGY_DECREASE_PER_ROLL = 20;
+
 function startGame() {
     playGame();
 }
 
-// ================= NAME VALIDATION =================
 function playGame() {
-
     let p1 = document.getElementById("p1").value.trim();
     let p2 = document.getElementById("p2").value.trim();
     let error = document.getElementById("error");
@@ -33,21 +35,33 @@ function playGame() {
 
     error.innerText = "";
 
-    if (!p1) { error.innerText = "Player1 Name cannot be empty"; return; }
-    if (!p2) { error.innerText = "Player2 Name cannot be empty"; return; }
-    if (!regex.test(p1)) { error.innerText = "Only alphabets allowed"; return; }
-    if (!regex.test(p2)) { error.innerText = "Only alphabets allowed"; return; }
-    if (p1.toLowerCase() === p2.toLowerCase()) { error.innerText = "Names cannot be same"; return; }
+    if (p1 === "") {
+        error.innerText = "Player1 Name cannot be empty";
+        return;
+    }
+    if (p2 === "") {
+        error.innerText = "Player2 Name cannot be empty";
+        return;
+    }
+    if (!regex.test(p1)) {
+        error.innerText = "Only alphabets are allowed in player1 name";
+        return;
+    }
+    if (!regex.test(p2)) {
+        error.innerText = "Only alphabets allowed in player2 name";
+        return;
+    }
+    if (p1.toLowerCase() === p2.toLowerCase()) {
+        error.innerText = "Names cannot be same";
+        return;
+    }
 
     localStorage.setItem("player1Name", p1);
     localStorage.setItem("player2Name", p2);
-
     window.location.href = "game.html";
 }
 
-// ================= INIT GAME =================
 function initGame() {
-
     player1Name = localStorage.getItem("player1Name");
     player2Name = localStorage.getItem("player2Name");
 
@@ -59,37 +73,33 @@ function initGame() {
     document.getElementById("p1Name").innerText = player1Name;
     document.getElementById("p2Name").innerText = player2Name;
 
-    p1Fixed = random();
-
+    Fixed1 = random();
     do {
-        p2Fixed = random();
-    } while (p2Fixed === p1Fixed);
+        Fixed2 = random();
+    }
+    while (Fixed2 === Fixed1);
 
-    document.getElementById("dice1").innerText = diceFaces[p1Fixed];
-    document.getElementById("dice2").innerText = diceFaces[p2Fixed];
+    document.getElementById("dice1").innerText = diceFaces[Fixed1];
+    document.getElementById("dice2").innerText = diceFaces[Fixed2];
 
     updateHighlight();
     startRollTimer();
+    updateEnergyBars();
 }
 
-// ================= ROLL DICE =================
 function rollDice() {
-
     clearInterval(countdownInterval);
-
     const diceEl = document.getElementById("rollingDice");
-
     let finalRoll = random();
-    let elapsed = 0;
+    let rollingTime = 0;
 
-    const anim = setInterval(() => {
+    const animation = setInterval(() => {
         diceEl.innerText = diceFaces[random()];
-        elapsed += 100;
+        rollingTime += 100;
 
-        if (elapsed >= 1000) {
-            clearInterval(anim);
+        if (rollingTime >= 1000) {
+            clearInterval(animation);
             diceEl.innerText = diceFaces[finalRoll];
-
             if (currentPlayer === 1 && p1Turns < MAX_TURNS)
                 handleRoll(finalRoll, "p1");
             else if (currentPlayer === 2 && p2Turns < MAX_TURNS)
@@ -99,92 +109,110 @@ function rollDice() {
     }, 100);
 }
 
-// ================= HANDLE ROLL =================
 function handleRoll(roll, player) {
 
     const isP1 = player === "p1";
-    const ownFixed = isP1 ? p1Fixed : p2Fixed;
-    const opponentFixed = isP1 ? p2Fixed : p1Fixed;
+    const firstFixed = Fixed1;
+    const secondFixed = Fixed2;
     const playerName = isP1 ? player1Name : player2Name;
     const tableId = isP1 ? "p1Table" : "p2Table";
-
     let turnNumber = isP1 ? p1Turns + 1 : p2Turns + 1;
+    let stage = isP1 ? p1Stage : p2Stage;
 
-    // ===== BONUS MODE =====
-    if (bonusMode) {
-
-        if (roll === opponentFixed) {
+    if (stage === 0) {
+        if (roll === firstFixed) {
+            addToTable(tableId, turnNumber, diceFaces[roll], "Matched ✅");
+            if (isP1) {
+                p1Stage = 1;
+            } else {
+                p2Stage = 1;
+            }
+            startRollTimer();
+            return;
+        }
+        addToTable(tableId, turnNumber, diceFaces[roll], " No Match ❌");
+        if (isP1) {
+            p1Turns++;
+            currentPlayer = 2;
+        } else {
+            p2Turns++;
+            currentPlayer = 1;
+        }
+        decreaseEnergy(isP1);
+        updateHighlight();
+        checkMaxTurns();
+        startRollTimer();
+        return;
+    }
+    if (stage === 1) {
+        if (roll === secondFixed) {
             addToTable(tableId, "Bonus", diceFaces[roll], "🏆 WIN");
             finishGame(playerName);
             return;
         }
 
-        if (roll === ownFixed) {
-            addToTable(tableId, "Bonus", diceFaces[roll], "🔥 Bonus Again");
-            startRollTimer();
-            return;
+        addToTable(tableId, "Bonus", diceFaces[roll], "No Match Dice2❌");
+        decreaseEnergy(isP1);
+        if (isP1) {
+            p1Stage = 0;
+            p1Turns++;
+            currentPlayer = 2;
+        } else {
+            p2Stage = 0;
+            p2Turns++;
+            currentPlayer = 1;
         }
-
-        addToTable(tableId, "Bonus", diceFaces[roll], "❌ Bonus Failed");
-        bonusMode = false;
-        currentPlayer = isP1 ? 2 : 1;
         updateHighlight();
+        checkMaxTurns();
         startRollTimer();
         return;
     }
-
-    // ===== NORMAL MODE =====
-
-    if (roll === ownFixed) {
-        addToTable(tableId, turnNumber, diceFaces[roll], "🔥 Bonus");
-        bonusMode = true;
-        startRollTimer();
-        return;
-    }
-
-    // Wrong roll
-    addToTable(tableId, turnNumber, diceFaces[roll], "❌");
-
-    if (isP1) {
-        p1Turns++;
-        currentPlayer = 2;
-    } else {
-        p2Turns++;
-        currentPlayer = 1;
-    }
-
-    updateHighlight();
-
-    // DRAW
-    if (p1Turns >= MAX_TURNS && p2Turns >= MAX_TURNS) {
-        finishDraw();
-        return;
-    }
-
-    startRollTimer();
 }
 
-// ================= TABLE =================
+function decreaseEnergy(isP1) {
+    if (isP1) {
+        p1Energy -= ENERGY_DECREASE_PER_ROLL;
+        if (p1Energy < 0) {
+            p1Energy = 0;
+        }
+    } else {
+        p2Energy -= ENERGY_DECREASE_PER_ROLL;
+        if (p2Energy < 0) {
+            p2Energy = 0;
+        }
+    }
+    updateEnergyBars();
+}
+
+function updateEnergyBars() {
+    document.getElementById("p1Progress").style.width = p1Energy + "%";
+    document.getElementById("p2Progress").style.width = p2Energy + "%";
+}
+
+function checkMaxTurns() {
+    if (p1Turns >= MAX_TURNS && p2Turns >= MAX_TURNS) {
+        finishDraw();
+    }
+}
+
 function addToTable(tableId, turn, roll, status) {
     const table = document.getElementById(tableId);
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${turn}</td><td>${roll}</td><td>${status}</td>`;
+    row.innerHTML = `<td>${turn}</td>
+    <td>${roll}</td>
+    <td>${status}</td>`;
     table.appendChild(row);
 }
 
-// ================= TIMER =================
 function startRollTimer() {
 
     clearInterval(countdownInterval);
     timeLeft = 20;
-
     const timerEl = document.getElementById("timer");
     timerEl.innerText = timeLeft;
-
     countdownInterval = setInterval(() => {
         timeLeft--;
         timerEl.innerText = timeLeft;
-
         if (timeLeft <= 0) {
             clearInterval(countdownInterval);
             rollDice();
@@ -192,36 +220,44 @@ function startRollTimer() {
     }, 1000);
 }
 
-// ================= FINISH =================
 function finishGame(winner) {
-    saveLeaderboard(winner);
+    saveLeaderboard(winner + " wins");
     document.getElementById("winnerText").innerText = `🏆 ${winner} Wins!`;
     document.getElementById("winnerScreen").style.display = "flex";
     clearInterval(countdownInterval);
 }
 
 function finishDraw() {
-    saveLeaderboard("Draw");
+    p1Energy = 0;
+    p2Energy = 0;
+    updateEnergyBars();
+    saveLeaderboard("Game Draw");
     document.getElementById("drawScreen").style.display = "flex";
     clearInterval(countdownInterval);
 }
 
-// ================= LEADERBOARD =================
 function saveLeaderboard(result) {
+    let today = new Date().toDateString();
     let history = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    history.push({ player1: player1Name, player2: player2Name, result });
+    history.unshift({
+        player1: player1Name,
+        player2: player2Name,
+        result: result,
+        date: today
+    });
     localStorage.setItem("leaderboard", JSON.stringify(history));
 }
 
 function loadLeaderboard() {
+
     const tbody = document.getElementById("leaderboardBody");
     if (!tbody) return;
-
     tbody.innerHTML = "";
-
+    let today = new Date().toDateString();
     let history = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    let todayGames = history.filter(game => game.date === today);
 
-    history.forEach(game => {
+    todayGames.forEach(game => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${game.player1}</td>
@@ -232,7 +268,6 @@ function loadLeaderboard() {
     });
 }
 
-// ================= UTIL =================
 function random() {
     return Math.floor(Math.random() * 6);
 }
@@ -241,9 +276,7 @@ function goHome() {
     window.location.href = "index.html";
 }
 
-// ================= TURN HIGHLIGHT =================
 function updateHighlight() {
-
     const p1Box = document.getElementById("p1Card");
     const p2Box = document.getElementById("p2Card");
     const turn1 = document.getElementById("turn1");
@@ -261,3 +294,5 @@ function updateHighlight() {
         turn1.style.display = "none";
     }
 }
+
+

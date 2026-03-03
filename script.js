@@ -4,11 +4,16 @@ let players = [];
 let currentPlayerIndex = 0;
 let fixedDiceValues = [];
 
-const MAX_TURNS = 5;
+let MAX_TURNS = 5;
 const ENERGY_DECREASE_PER_ROLL = 20;
 
 let countdownInterval = null;
 let timeLeft = 20;
+
+/* 🔥 NEW: Prevent multiple leaderboard entries */
+let gameEnded = false;
+
+/* ================= START GAME ================= */
 
 function startGame() {
 
@@ -16,22 +21,18 @@ function startGame() {
     const diceCount = parseInt(document.getElementById("fixedDiceCount").value);
 
     const playerNames = [];
-
-    const nameRegex = /^[A-Za-z\s]{1,15}$/; 
-    // Only letters and spaces, max 15 characters
+    const nameRegex = /^[A-Za-z\s]{1,15}$/;
 
     for (let input of inputs) {
 
         const name = input.value.trim();
 
-        // Check empty
         if (name === "") {
             document.getElementById("error").innerText =
                 "All player names are required!";
             return;
         }
 
-        // Check length + only letters
         if (!nameRegex.test(name)) {
             document.getElementById("error").innerText =
                 "Names must be letters only (max 15 characters, no numbers).";
@@ -41,14 +42,12 @@ function startGame() {
         playerNames.push(name);
     }
 
-    // Minimum 2 players
     if (playerNames.length < 2) {
         document.getElementById("error").innerText =
             "Minimum 2 players required!";
         return;
     }
 
-    // Check duplicate names (case insensitive)
     const lowerCaseNames = playerNames.map(n => n.toLowerCase());
     const uniqueNames = new Set(lowerCaseNames);
 
@@ -58,7 +57,6 @@ function startGame() {
         return;
     }
 
-    // Clear error if everything valid
     document.getElementById("error").innerText = "";
 
     localStorage.setItem("players", JSON.stringify(playerNames));
@@ -66,9 +64,13 @@ function startGame() {
 
     window.location.href = "game.html";
 }
+
 /* ================= INIT GAME ================= */
 
 function initGame() {
+
+    gameEnded = false; // 🔥 Reset when new game starts
+
     const storedPlayers = JSON.parse(localStorage.getItem("players"));
     const diceCount = parseInt(localStorage.getItem("diceCount"));
 
@@ -77,7 +79,6 @@ function initGame() {
         return;
     }
 
-    // Generate fixed dice
     fixedDiceValues = [];
     for (let i = 0; i < diceCount; i++) {
         fixedDiceValues.push(random());
@@ -94,6 +95,7 @@ function initGame() {
     playersContainer.innerHTML = "";
 
     players.forEach((player, index) => {
+
         const playerCard = document.createElement("div");
         playerCard.classList.add("player-card");
         playerCard.id = `player${index}Card`;
@@ -101,7 +103,9 @@ function initGame() {
         playerCard.innerHTML = `
             <h3>${player.name}</h3>
             <div class="energy-bar">
-                <div class="energy-progress" id="player${index}Progress" style="width:${player.energy}%"></div>
+                <div class="energy-progress"
+                     id="player${index}Progress"
+                     style="width:${player.energy}%"></div>
             </div>
             <table id="player${index}Table" class="player-table">
                 <thead>
@@ -110,6 +114,7 @@ function initGame() {
                 <tbody></tbody>
             </table>
         `;
+
         playersContainer.appendChild(playerCard);
     });
 
@@ -141,9 +146,13 @@ function renderFixedDice() {
         container.appendChild(box);
     });
 }
+
 /* ================= ROLL ================= */
 
 function rollDice() {
+
+    if (gameEnded) return;
+
     clearInterval(countdownInterval);
 
     const diceEl = document.getElementById("rollingDice");
@@ -152,6 +161,7 @@ function rollDice() {
     let rollingTime = 0;
 
     const animation = setInterval(() => {
+
         diceEl.innerText = diceFaces[random()];
         rollingTime += 100;
 
@@ -160,12 +170,15 @@ function rollDice() {
             diceEl.innerText = diceFaces[finalRoll];
             handleRoll(finalRoll, currentPlayerIndex);
         }
+
     }, 100);
 }
 
 /* ================= MATCH LOGIC ================= */
 
 function handleRoll(roll, playerIndex) {
+
+    if (gameEnded) return;
 
     const player = players[playerIndex];
     const tableId = `player${playerIndex}Table`;
@@ -182,13 +195,11 @@ function handleRoll(roll, playerIndex) {
 
         player.stage++;
 
-        // ✅ WIN IMMEDIATELY IF COMPLETED ALL
         if (player.stage === fixedDiceValues.length) {
             finishGame(player.name);
             return;
         }
 
-        // Bonus turn (same player continues)
         updateHighlight();
         startRollTimer();
         return;
@@ -218,10 +229,14 @@ function handleRoll(roll, playerIndex) {
 /* ================= NEXT PLAYER ================= */
 
 function nextPlayer() {
+
     const totalPlayers = players.length;
 
     for (let i = 1; i <= totalPlayers; i++) {
-        let nextIndex = (currentPlayerIndex + i) % totalPlayers;
+
+        let nextIndex =
+            (currentPlayerIndex + i) % totalPlayers;
+
         if (players[nextIndex].turns < MAX_TURNS) {
             currentPlayerIndex = nextIndex;
             return;
@@ -239,9 +254,14 @@ function decreaseEnergy(player) {
 }
 
 function updateEnergyBars() {
+
     players.forEach((player, index) => {
-        const bar = document.getElementById(`player${index}Progress`);
-        if (bar) bar.style.width = player.energy + "%";
+
+        const bar =
+            document.getElementById(`player${index}Progress`);
+
+        if (bar)
+            bar.style.width = player.energy + "%";
     });
 }
 
@@ -249,18 +269,23 @@ function updateEnergyBars() {
 
 function checkMaxTurns(force = false) {
 
-    if (force || players.every(p => p.turns >= MAX_TURNS)) {
+    if (gameEnded) return;
 
-        // If nobody completed full chain
+    if (force || players.every(p => p.turns >= MAX_TURNS)) {
         finishDraw();
     }
 }
 
 function finishGame(winner) {
 
+    if (gameEnded) return; // 🔥 prevent duplicates
+    gameEnded = true;
+
     saveLeaderboard(`${winner} wins`);
 
-    const winnerScreen = document.getElementById("winnerScreen");
+    const winnerScreen =
+        document.getElementById("winnerScreen");
+
     document.getElementById("winnerText").innerText =
         `🏆 ${winner} Wins!`;
 
@@ -270,6 +295,9 @@ function finishGame(winner) {
 }
 
 function finishDraw() {
+
+    if (gameEnded) return; // 🔥 prevent duplicates
+    gameEnded = true;
 
     players.forEach(p => p.energy = 0);
     updateEnergyBars();
@@ -285,13 +313,16 @@ function finishDraw() {
 /* ================= TABLE ================= */
 
 function addToTable(tableId, turn, roll, status) {
+
     const tableBody =
         document.getElementById(tableId)?.querySelector("tbody");
 
     if (!tableBody) return;
 
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${turn}</td><td>${roll}</td><td>${status}</td>`;
+    row.innerHTML =
+        `<td>${turn}</td><td>${roll}</td><td>${status}</td>`;
+
     tableBody.appendChild(row);
 }
 
@@ -303,18 +334,22 @@ function saveLeaderboard(result) {
         JSON.parse(localStorage.getItem("leaderboard")) || [];
 
     history.unshift({
-        players: players.map(p => p.name), // store as array
+        players: players.map(p => p.name),
         result: result,
         date: new Date().toLocaleString()
     });
 
-    localStorage.setItem("leaderboard",
-        JSON.stringify(history));
+    localStorage.setItem(
+        "leaderboard",
+        JSON.stringify(history)
+    );
 }
 
 function loadLeaderboard() {
 
-    const tbody = document.getElementById("leaderboardBody");
+    const tbody =
+        document.getElementById("leaderboardBody");
+
     if (!tbody) return;
 
     tbody.innerHTML = "";
@@ -326,13 +361,10 @@ function loadLeaderboard() {
 
         const row = document.createElement("tr");
 
-        let playerList = "";
-
-        if (Array.isArray(game.players)) {
-            playerList = game.players.join(", ");
-        } else {
-            playerList = game.players; // for old saved data
-        }
+        let playerList =
+            Array.isArray(game.players)
+                ? game.players.join(", ")
+                : game.players;
 
         row.innerHTML = `
             <td>${playerList}</td>
@@ -347,11 +379,15 @@ function loadLeaderboard() {
 
 function startRollTimer() {
 
+    if (gameEnded) return;
+
     clearInterval(countdownInterval);
 
     timeLeft = 20;
 
-    const timerEl = document.getElementById("timer");
+    const timerEl =
+        document.getElementById("timer");
+
     timerEl.innerText = timeLeft;
 
     countdownInterval = setInterval(() => {
@@ -376,10 +412,14 @@ function goHome() {
 }
 
 function updateHighlight() {
+
     players.forEach((player, index) => {
+
         const card =
             document.getElementById(`player${index}Card`);
+
         if (!card) return;
+
         card.classList.toggle(
             "player-active",
             index === currentPlayerIndex

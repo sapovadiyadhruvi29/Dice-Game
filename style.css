@@ -443,20 +443,112 @@ h3.timer-text {
 }
 
 /* ===== PROFESSIONAL FIXED DICE GRID ===== */
+/* ===== PERFECT CENTER ROLL AREA ===== */
 
 #progressContainer {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-    justify-items: center;
-    max-width: 900px;
-    margin: 0 auto 40px auto;
+    width: 550px;
+    margin: 20px auto;
 }
 
-/* Center the second row automatically */
-#progressContainer::after {
-    content: "";
-    grid-column: span 5;
+.progress-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.progress-row.second {
+    justify-content: center;
+    gap: 20px;
+}
+
+/* ===== BIGGER PROFESSIONAL FIXED DICE ===== */
+
+.progress-dice {
+    width: 90px;
+    height: 90px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 45px;
+    font-weight: bold;
+
+    background: linear-gradient(145deg, #1e4d6b, #133547);
+    border: 3px solid #cbd5e1;
+    border-radius: 12px;
+
+    box-shadow:
+        0 6px 15px rgba(0,0,0,0.5),
+        inset 0 0 12px rgba(0,0,0,0.4);
+
+    transition: all 0.3s ease;
+}
+
+/* Hover Lift Effect */
+.progress-dice:hover {
+    transform: translateY(-6px) scale(1.05);
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.7),
+        0 0 15px #22d3ee;
+}
+
+/* Active stage glow */
+.progress-dice.active {
+    border-color: #00f7ff;
+    box-shadow:
+        0 0 20px #00f7ff,
+        0 0 40px rgba(0,255,255,0.5);
+}
+
+.roll-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+}
+/* ===== SECOND ROW WITH CENTER BUTTON ===== */
+
+.progress-row.second {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+.center-roll-btn {
+    min-width: 120px;
+}
+
+#rollArea {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+/* ===== CENTER ROLL BLOCK INSIDE SECOND ROW ===== */
+
+.center-roll-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.center-roll-container .big-dice {
+    font-size: 80px;
+}
+
+.center-roll-container .roll-btn {
+    padding: 10px 30px;
+}
+
+.big-dice {
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Stage Highlight */

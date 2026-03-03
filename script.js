@@ -86,7 +86,6 @@ function initGame() {
         return;
     }
 
-    /* 🔥 Dynamic Energy Calculation */
     ENERGY_DECREASE_PER_ROLL = 100 / MAX_TURNS;
 
     fixedDiceValues = [];
@@ -128,7 +127,7 @@ function initGame() {
         playersContainer.appendChild(playerCard);
     });
 
-    renderFixedDice();
+    renderFixedDice(diceCount);  // 🔥 FIXED HERE
     updateHighlight();
     startRollTimer();
     updateEnergyBars();
@@ -136,25 +135,72 @@ function initGame() {
 
 /* ================= RENDER FIXED DICE ================= */
 
-function renderFixedDice() {
+function renderFixedDice(totalDice) {
 
     const container = document.getElementById("progressContainer");
     container.innerHTML = "";
 
-    fixedDiceValues.forEach((val, index) => {
+    const row1 = document.createElement("div");
+    row1.className = "progress-row";
 
-        const box = document.createElement("div");
-        box.classList.add("dice-box");
+    const row2 = document.createElement("div");
+    row2.className = "progress-row second";
 
-        box.innerHTML = `
-            <div class="dice small-dice">
-                ${diceFaces[val]}
-            </div>
-            <p>Fixed Dice ${index + 1}</p>
-        `;
+    let firstRowCount = Math.min(6, totalDice);
 
-        container.appendChild(box);
-    });
+    // ROW 1
+    for (let i = 0; i < firstRowCount; i++) {
+        const dice = document.createElement("div");
+        dice.className = "progress-dice";
+        dice.innerText = diceFaces[fixedDiceValues[i]];
+        row1.appendChild(dice);
+    }
+
+    container.appendChild(row1);
+
+    if (totalDice <= 6) return;
+
+    let remaining = totalDice - 6;
+
+    let leftCount = Math.floor(remaining / 2);
+    let rightCount = remaining - leftCount;
+
+    // LEFT SIDE DICE
+    for (let i = 0; i < leftCount; i++) {
+        const dice = document.createElement("div");
+        dice.className = "progress-dice";
+        dice.innerText = diceFaces[fixedDiceValues[6 + i]];
+        row2.appendChild(dice);
+    }
+
+    // 🔥 CENTER BLOCK (Dice + Button)
+    const centerContainer = document.createElement("div");
+    centerContainer.className = "center-roll-container";
+
+    const rollingDiceEl = document.createElement("div");
+    rollingDiceEl.id = "rollingDice";
+    rollingDiceEl.className = "dice big-dice";
+    rollingDiceEl.innerText = "⚀";
+
+    const rollBtn = document.createElement("button");
+    rollBtn.className = "roll-btn";
+    rollBtn.innerText = "ROLL";
+    rollBtn.onclick = rollDice;
+
+    centerContainer.appendChild(rollingDiceEl);
+    centerContainer.appendChild(rollBtn);
+
+    row2.appendChild(centerContainer);
+
+    // RIGHT SIDE DICE
+    for (let i = 0; i < rightCount; i++) {
+        const dice = document.createElement("div");
+        dice.className = "progress-dice";
+        dice.innerText = diceFaces[fixedDiceValues[6 + leftCount + i]];
+        row2.appendChild(dice);
+    }
+
+    container.appendChild(row2);
 }
 
 /* ================= ROLL ================= */

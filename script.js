@@ -5,12 +5,11 @@ let currentPlayerIndex = 0;
 let fixedDiceValues = [];
 
 let MAX_TURNS = 5;
-const ENERGY_DECREASE_PER_ROLL = 20;
+let ENERGY_DECREASE_PER_ROLL = 20;
 
 let countdownInterval = null;
 let timeLeft = 20;
 
-/* 🔥 NEW: Prevent multiple leaderboard entries */
 let gameEnded = false;
 
 /* ================= START GAME ================= */
@@ -57,10 +56,15 @@ function startGame() {
         return;
     }
 
+    const frequency = parseInt(
+        document.getElementById("frequencyCount").value
+    );
+
     document.getElementById("error").innerText = "";
 
     localStorage.setItem("players", JSON.stringify(playerNames));
     localStorage.setItem("diceCount", diceCount);
+    localStorage.setItem("frequency", frequency);
 
     window.location.href = "game.html";
 }
@@ -69,15 +73,21 @@ function startGame() {
 
 function initGame() {
 
-    gameEnded = false; // 🔥 Reset when new game starts
+    gameEnded = false;
 
     const storedPlayers = JSON.parse(localStorage.getItem("players"));
     const diceCount = parseInt(localStorage.getItem("diceCount"));
+
+    MAX_TURNS =
+        parseInt(localStorage.getItem("frequency")) || 5;
 
     if (!storedPlayers || storedPlayers.length < 2) {
         window.location.href = "index.html";
         return;
     }
+
+    /* 🔥 Dynamic Energy Calculation */
+    ENERGY_DECREASE_PER_ROLL = 100 / MAX_TURNS;
 
     fixedDiceValues = [];
     for (let i = 0; i < diceCount; i++) {
@@ -214,7 +224,9 @@ function handleRoll(roll, playerIndex) {
         );
 
         player.turns++;
+
         decreaseEnergy(player);
+
         player.stage = 0;
 
         nextPlayer();
@@ -249,8 +261,13 @@ function nextPlayer() {
 /* ================= ENERGY ================= */
 
 function decreaseEnergy(player) {
-    player.energy -= ENERGY_DECREASE_PER_ROLL;
-    if (player.energy < 0) player.energy = 0;
+
+    /* 🔥 Perfectly Sync Energy with Turns */
+    const energyPerTurn = 100 / MAX_TURNS;
+    player.energy = 100 - (player.turns * energyPerTurn);
+
+    if (player.energy < 0)
+        player.energy = 0;
 }
 
 function updateEnergyBars() {
@@ -271,6 +288,7 @@ function checkMaxTurns(force = false) {
 
     if (gameEnded) return;
 
+    /* 🔥 Draw only when EVERY player completed selected turns */
     if (force || players.every(p => p.turns >= MAX_TURNS)) {
         finishDraw();
     }
@@ -278,7 +296,7 @@ function checkMaxTurns(force = false) {
 
 function finishGame(winner) {
 
-    if (gameEnded) return; // 🔥 prevent duplicates
+    if (gameEnded) return;
     gameEnded = true;
 
     saveLeaderboard(`${winner} wins`);
@@ -296,7 +314,7 @@ function finishGame(winner) {
 
 function finishDraw() {
 
-    if (gameEnded) return; // 🔥 prevent duplicates
+    if (gameEnded) return;
     gameEnded = true;
 
     players.forEach(p => p.energy = 0);

@@ -1,0 +1,184 @@
+====================== app.component.ts====================
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ProfileCardComponent } from './profile-card/profile-card.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, ProfileCardComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+
+  users = [
+    {
+      name: "Dhruvi Patel",
+      role: "Software Engineer",
+      bio: "Angular developer who enjoys building UI.",
+      avatarUrl: "https://i.pravatar.cc/150?img=1",
+      linkedin: "#",
+      github: "#"
+    }
+  ];
+
+  addUser(){
+    const newUser = {
+      name: "New User",
+      role: "Angular Developer",
+      bio: "This is a new profile card.",
+      avatarUrl: "https://i.pravatar.cc/150?img=" + (this.users.length + 2),
+      linkedin: "#",
+      github: "#"
+    };
+
+    this.users.push(newUser);
+  }
+
+  deleteUser(index:number){
+    this.users.splice(index,1);
+  }
+
+}
+
+
+===========================================app.component.html==========================
+
+<div class="container">
+
+<h1>Personal Profile Cards</h1>
+
+<button class="add-btn" (click)="addUser()">Add Card</button>
+
+<div class="card-container">
+
+<app-profile-card
+*ngFor="let user of users; let i=index"
+[user]="user"
+(deleteCard)="deleteUser(i)">
+</app-profile-card>
+
+</div>
+
+</div>
+
+================================profile-card.component==================================
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-profile-card',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './profile-card.component.html',
+  styleUrl: './profile-card.component.css'
+})
+export class ProfileCardComponent {
+
+  @Input() user:any;
+
+  @Output() deleteCard = new EventEmitter<void>();
+
+  showBio = true;
+
+  toggleBio(){
+    this.showBio = !this.showBio;
+  }
+
+  delete(){
+    this.deleteCard.emit();
+  }
+
+}
+
+
+=====================================profile-card.component.html======================
+
+<div class="card">
+
+<img [src]="user.avatarUrl" class="avatar">
+
+<h2>{{user.name}}</h2>
+<h4>{{user.role}}</h4>
+
+<p *ngIf="showBio">
+{{user.bio}}
+</p>
+
+<button (click)="toggleBio()">
+{{showBio ? 'Hide Bio' : 'Show Bio'}}
+</button>
+
+<div class="social">
+<a [href]="user.linkedin">LinkedIn</a>
+<a [href]="user.github">GitHub</a>
+</div>
+
+<button class="delete-btn" (click)="delete()">Delete</button>
+
+</div>
+
+
+========================================profile-card.component.css=====================
+
+.card{
+width:260px;
+padding:20px;
+margin:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+text-align:center;
+transition:0.3s;
+background:white;
+}
+
+.card:hover{
+transform:scale(1.05);
+}
+
+.avatar{
+width:100px;
+height:100px;
+border-radius:50%;
+margin-bottom:10px;
+}
+
+.social a{
+margin:5px;
+text-decoration:none;
+color:blue;
+}
+
+.delete-btn{
+margin-top:10px;
+background:red;
+color:white;
+border:none;
+padding:6px 12px;
+cursor:pointer;
+}
+
+===============================app.component.css==================
+
+
+.container{
+text-align:center;
+}
+
+.card-container{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.add-btn{
+padding:10px 20px;
+background:green;
+color:white;
+border:none;
+cursor:pointer;
+margin-bottom:20px;
+}
+
